@@ -41,15 +41,56 @@ class Table:
             cleanData = rawData.decode('utf-8').strip('\x00')
             print("Data from file, read: " + cleanData)
 
-    def delete(self, rowNr):
+    def select_all(self):
+        if self.rowCount <= 0:# in case theres no file, else it would crash
+            return None       #
+        with open(self.filename, "rb") as f:      
+            for row in range(self.rowCount):
+                f.seek(self.recordSize * row)
+                rawBytes = f.read(self.recordSize)
+                unpacked = struct.unpack(self.formatString, rawBytes)
+                is_deleted = unpacked[0]
+                rowID = unpacked[1]
+                rawData = unpacked[2]
+                status = ""
+                if is_deleted == True:
+                    status = "Deleted"
+                else:
+                    status = "Active"
+
+                cleanData = rawData.decode('utf-8').strip("\x00")
+                print(str(rowID) + "-" + cleanData + "-" + status)
+
+
+    """def delete(self, rowNr):
         with open(self.filename, "r+b") as f:
             if rowNr >= self.rowCount:
                 raise ValueError("Row does not exist!")
             f.seek(self.recordSize * rowNr)
-            f.write(struct.pack("?", True))
+            f.write(struct.pack("?", True))""" # this deletes by row number, not really useful
+    
+    def delete_ID(self, targetID):
+        if self.rowCount <= 0:
+            return None
+        with open(self.filename, "r+b") as f:
+            for row in range(self.rowCount):
+                f.seek(self.recordSize * row)
+                rawBytes = f.read(self.recordSize) # read moves the cursor forward, consumes bytes and advances the cursor
+                unpacked = struct.unpack(self.formatString ,rawBytes)
+                is_deleted = unpacked[0]
+                rowID = unpacked[1]
+
+                if is_deleted == True:
+                    continue
+
+                if targetID == rowID:
+                    f.seek(self.recordSize * row)   # move cursor back to the start of THIS row
+                    f.write(struct.pack("?", True))
+                    return
+        raise ValueError("No row with that ID exists!3") 
 
     def find_ID(self, targetID):
-        if self.rowCount == 0:  #added these two lines, cuz in case theres no file, else it would crash
+        if self.rowCount <= 0:  #added these two lines, cuz in case theres no file, else it would crash
             return None         #
         with open(self.filename, "rb") as f:
             for rowNr in range(self.rowCount):
