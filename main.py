@@ -4,11 +4,12 @@ table = Table("data.bin", "<?i46s") # we use "<" here to stop padding bytes, bec
 
 while True:
     print("\nChoose action:\n")
-    print("1. Insert row")
-    print("2. Read row")
-    print("3. Delete row")
+    print("1. Insert")
+    print("2. Select")
+    print("3. Delete")
     print("4. Find by ID")
-    print("5. Quit\n")
+    print("5. Select all")
+    print("6. Quit\n")
     choice = input("Choose an option\n")
 
     if choice == "1":
@@ -29,9 +30,9 @@ while True:
             print("Error: ", e)
     
     elif choice == "3":
-        rowNr = int(input("Enter the row to delete: "))
+        rowNr = int(input("Enter the ID to delete: "))
         try:
-            table.delete(rowNr)
+            table.delete_ID(rowNr)
         except ValueError as e:
             print("Error: ", e)
 
@@ -45,6 +46,12 @@ while True:
             print("Data from ID " + str(rowID) + " is " + "\"" + name + "\"")
             
     elif choice == "5":
+        try:
+            table.select_all()
+        except ValueError as e:
+            print("Error: ", e)
+
+    elif choice == "6":
         break
 
     else:
