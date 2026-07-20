@@ -15,6 +15,13 @@ class Table:
             self.rowCount = 0
     
     def insert(self, entry):
+        nameBytes = entry[1]
+        if len(nameBytes) > 46:
+            raise ValueError("Name too long, max 46 bytes!")
+        
+        if self.find_ID(entry[0]) is not None:
+            raise ValueError("An entry with this ID already exists!")
+
         with open(self.filename, "ab") as f:
             packed = struct.pack(self.formatString, False, entry[0], entry[1])
             f.write(packed)
@@ -40,3 +47,23 @@ class Table:
                 raise ValueError("Row does not exist!")
             f.seek(self.recordSize * rowNr)
             f.write(struct.pack("?", True))
+
+    def find_ID(self, targetID):
+        if self.rowCount == 0:  #added these two lines, cuz in case theres no file, else it would crash
+            return None         #
+        with open(self.filename, "rb") as f:
+            for rowNr in range(self.rowCount):
+                f.seek(self.recordSize * rowNr)
+                rawBytes = f.read(self.recordSize)
+                unpacked = struct.unpack(self.formatString, rawBytes)
+                is_deleted = unpacked[0]
+                rowID = unpacked[1]
+                rawData = unpacked[2]
+
+                if is_deleted == True:
+                    continue
+
+                if targetID == rowID:
+                    cleanData = rawData.decode('utf-8').strip('\x00')
+                    return(rowID, cleanData)
+        return None

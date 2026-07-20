@@ -7,15 +7,19 @@ while True:
     print("1. Insert row")
     print("2. Read row")
     print("3. Delete row")
-    print("4. Quit\n")
+    print("4. Find by ID")
+    print("5. Quit\n")
     choice = input("Choose an option\n")
 
     if choice == "1":
         id = int(input("Enter a number as ID: "))
-        nameString = input("Enter a name: ")
+        nameString = input("Enter the name: ")
         nameBytes = nameString.encode('utf-8')
-        table.insert((id, nameBytes))
-        print("\nRow added!\n")
+        try:
+            table.insert((id, nameBytes))
+            print("\nRow added!\n")
+        except ValueError as e:
+            print("\nError: ", e)
     
     elif choice == "2":
         rowNr = int(input("Enter the row number to read: "))
@@ -32,6 +36,15 @@ while True:
             print("Error: ", e)
 
     elif choice == "4":
+        targetID = int(input("Enter the ID: "))
+        result = table.find_ID(targetID)
+        if result is None:
+            print("No row with that ID was found")
+        else:
+            rowID, name = result
+            print("Data from ID " + str(rowID) + " is " + "\"" + name + "\"")
+            
+    elif choice == "5":
         break
 
     else:
